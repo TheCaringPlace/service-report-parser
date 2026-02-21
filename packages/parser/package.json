@@ -10,6 +10,7 @@
   "license": "ISC",
   "description": "A parser for parsing Service Reports exported from the FreeStore Foodbank's tracking system as PDFs and converting them into consumable JSON",
   "scripts": {
+    "clean": "rm -rf reports dist",
     "sync-s3": "node ./src/index.js sync-s3 -b caringplace-service-reports -d reports/downloaded",
     "build": "node ./src/index.js parse-reports -i reports/downloaded -o reports/parsed && node ./src/index.js consolidate-reports -i reports/parsed -o reports && node ./src/index.js consolidate-financials -i reports/downloaded/financial-data -o reports/financials.json"
   },

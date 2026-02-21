@@ -5,9 +5,11 @@
   "author": "Daniel Kleco",
   "license": "ISC",
   "workspaces": [
-    "packages/*"
+    "packages/parser",
+    "packages/dashboard"
   ],
   "scripts": {
+    "clean": "npm run clean --workspaces",
     "deploy": "sst deploy",
     "build": "npm run build --workspaces",
     "sst": "sst"
