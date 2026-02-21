@@ -1,3 +1,5 @@
 node_modules/
-reports/
-.DS_Store
+.sst
+packages/parser/reports/
+packages/dashboard/data/
+dist/

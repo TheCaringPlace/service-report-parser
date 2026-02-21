@@ -10,6 +10,7 @@ import { extractTextFromPdf } from "./lib/pdf.js";
 import { syncFilesFromS3 } from "./lib/sync-s3.js";
 import { parseReport } from "./parsers/parse-report.js";
 import { consolidateReports } from "./lib/cleanup.js";
+import { consolidateFinancials } from "./lib/consolidate-financials.js";
 
 program
   .name("service-report-parser")
@@ -120,11 +121,11 @@ program
     );
     const consolidatedReports = consolidateReports(reports);
     await writeFileWithMkdir(
-      join(output, "consolidated.json"),
+      join(output, "service-report.json"),
       JSON.stringify(consolidatedReports, null, 2),
     );
 
-    const csvFile = join(output, "consolidated.csv");
+    const csvFile = join(output, "service-report.csv");
     const ws = createWriteStream(csvFile);
 
     fastcsv
@@ -133,6 +134,21 @@ program
       .on("finish", () => {
         console.log(`Finished writing data to: ${csvFile}`);
       });
+  });
+
+program
+  .command("consolidate-financials")
+  .description("Consolidate financial CSV files (Income, Expenses) into JSON")
+  .requiredOption(
+    "-i, --input <input-folder>",
+    "The folder containing the financial CSV files",
+  )
+  .requiredOption(
+    "-o, --output <output-file>",
+    "The path for the output financials.json file",
+  )
+  .action(async ({ input, output }) => {
+    await consolidateFinancials(input, output);
   });
 
 program.parse(process.argv);
