@@ -1,19 +1,20 @@
 {
-  "name": "service-report-parser",
+  "name": "@thecaringplace/reporting",
   "version": "1.0.0",
-  "main": "src/index.js",
-  "bin": {
-    "service-report-parser": "src/index.js"
-  },
-  "type": "module",
+  "private": true,
   "author": "Daniel Kleco",
   "license": "ISC",
-  "description": "A parser for parsing Service Reports exported from the FreeStore Foodbank's tracking system as PDFs and converting them into consumable JSON",
-  "dependencies": {
-    "@aws-sdk/client-s3": "^3.993.0",
-    "commander": "^14.0.3",
-    "fast-csv": "^5.0.5",
-    "flat": "^6.0.1",
-    "pdf-parse": "^2.4.5"
+  "workspaces": [
+    "packages/parser",
+    "packages/dashboard"
+  ],
+  "scripts": {
+    "clean": "npm run clean --workspaces",
+    "deploy": "sst deploy",
+    "build": "npm run build --workspaces",
+    "sst": "sst"
+  },
+  "devDependencies": {
+    "sst": "^3.0.0"
   }
 }

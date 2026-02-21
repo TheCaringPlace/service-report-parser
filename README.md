@@ -1,29 +1,23 @@
-# Service Report Parser
+# The Caring Place Reporting
 
-A parser for parsing Service Reports exported from the FreeStore Foodbank's tracking system as PDFs and converting them into consumable JSON. 
+Parser and dashboard for Service Reports from the FreeStore Foodbank tracking system.
 
-## Install
+## Packages
 
-Install the CLI by:
+- **parser** – Parse PDF reports, consolidate to JSON, sync with S3
+- **dashboard** – Interactive charts for service and financial data
 
-- Checkout the code
-- Run `npm i` to install
-- Run `npm i -g` to make available as a global script
-
-## Use
-
-Run the script with:
-
-`service-report-parser parse-reports -i <input-folder> -i <output-folder>`
-
-## End to End Process
-
-To consolidate all of the reports run the following commands:
+## Quick start
 
 ```bash
-AWS_PROFILE=thecaringplace AWS_REGION=us-east-2 service-report-parser sync-s3 -b caringplace-service-reports -d reports/downloaded
-service-report-parser parse-reports -i reports/downloaded -o reports/parsed
-service-report-parser consolidate-reports -i reports/parsed -o reports/consolidated.json
+npm install
+cd packages/dashboard && npm run dev
 ```
 
-The consolidated data will be written to `reports/consolidated.json`
+## Build & deploy
+
+1. Generate reports: `cd packages/parser && npm run build`
+2. Deploy dashboard (SST, password-protected): from root, run `npm run deploy`
+   - Set credentials first: `npx sst secret set USERNAME x` and `PASSWORD y`
+
+See `packages/parser/README.md` and `packages/dashboard/README.md` for details.

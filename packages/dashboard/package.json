@@ -1,0 +1,19 @@
+{
+  "name": "@thecaringplace/reporting-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "clean": "rm -rf data dist",
+    "dev": "vite",
+    "prebuild": "mkdir -p data && cp ../parser/reports/service-report.json ./data/ && cp ../parser/reports/financials.json ./data/",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "chart.js": "^4.4.6"
+  },
+  "devDependencies": {
+    "vite": "^6.0.3"
+  }
+}
