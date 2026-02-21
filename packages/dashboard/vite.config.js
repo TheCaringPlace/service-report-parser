@@ -12,6 +12,7 @@ export default defineConfig({
         main: 'index.html',
         serviceReports: 'service-report.html',
         financials: 'financials.html',
+        serviceExpenses: 'service-expenses.html',
       },
     },
   },
