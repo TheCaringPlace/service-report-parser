@@ -16,13 +16,17 @@ export default $config({
     );
 
     const site = new sst.aws.StaticSite("Dashboard", {
-      domain: $app.stage === "production" ? "reports.thecaringplace.info" : undefined,
-      path: "packages/dashboard",
+      path: "packages/dashboard/",
       build: {
         command: "npm run build",
         output: "dist",
       },
-      // Password protect all stages. Set to $app.stage === "production" to only protect prod.
+      domain:
+        $app.stage === "production"
+          ? {
+              name: "reports.thecaringplace.info",
+            }
+          : undefined,
       edge: {
         viewerRequest: {
           injection: $interpolate`
