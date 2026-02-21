@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="./favicon.ico" type="image/x-icon" />
     <title>Financial Report | The Caring Place</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -15,22 +16,35 @@
   <body>
     <div class="app">
       <header>
-        <h1>The Caring Place</h1>
-        <p class="subtitle">Financial Report</p>
+        <a href="https://thecaringplace.info/" target="_blank" rel="noopener" class="logo-link">
+          <img src="./logo.webp" alt="The Caring Place" class="logo" />
+        </a>
+        <div class="header-text">
+          <h1>The Caring Place</h1>
+          <p class="subtitle">Financial Report</p>
+        </div>
       </header>
 
       <nav>
         <a href="index.html">Home</a>
         <a href="service-report.html">Service Report</a>
         <a href="financials.html" class="active">Financial Report</a>
+        <a href="service-expenses.html">Expense per Household & Individual</a>
       </nav>
 
       <div class="filters">
-        <div class="filter-group">
-          <label for="year">Year</label>
-          <select id="year">
-            <option value="all">All years</option>
-          </select>
+        <div class="filter-group year-range">
+          <label>Year range</label>
+          <div class="year-sliders">
+            <div class="slider-group">
+              <span class="year-value" id="year-start-label">2020</span>
+              <input type="range" id="year-start" min="2020" max="2025" value="2020" />
+            </div>
+            <div class="slider-group">
+              <span class="year-value" id="year-end-label">2025</span>
+              <input type="range" id="year-end" min="2020" max="2025" value="2025" />
+            </div>
+          </div>
         </div>
       </div>
       <div class="metrics" id="metrics"></div>
@@ -110,6 +124,25 @@
           <h2>Top expense sources over time</h2>
           <div class="chart-container tall">
             <canvas id="chart-expense-sources-trend"></canvas>
+          </div>
+        </div>
+
+        <h3 class="section-heading">Summary</h3>
+        <div class="card full-width">
+          <h2>By year</h2>
+          <div class="table-wrapper">
+            <table class="data-table" id="data-table">
+              <thead>
+                <tr>
+                  <th>Year</th>
+                  <th>Total income</th>
+                  <th>Total expenses</th>
+                  <th>Net</th>
+                  <th>Net margin %</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
           </div>
         </div>
       </div>

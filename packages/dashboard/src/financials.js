@@ -1,31 +1,50 @@
 import { Chart, registerables } from 'chart.js';
 import data from '../data/financials.json';
+import { formatCurrency } from './lib/utils.js';
+import { chartDefaults, destroyChart } from './lib/charts.js';
 
 Chart.register(...registerables);
 
-const chartDefaults = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: { legend: { position: 'bottom' } },
-};
+// Year range slider
+const yearStartInput = document.getElementById('year-start');
+const yearEndInput = document.getElementById('year-end');
+const yearStartLabel = document.getElementById('year-start-label');
+const yearEndLabel = document.getElementById('year-end-label');
 
-function formatCurrency(n) {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
+const dataYears = data.years ?? [];
+const minYear = dataYears.length > 0 ? Math.min(...dataYears) : new Date().getFullYear() - 5;
+const maxYear = dataYears.length > 0 ? Math.max(...dataYears) : new Date().getFullYear();
+
+yearStartInput.min = minYear;
+yearStartInput.max = maxYear;
+yearStartInput.value = minYear;
+yearEndInput.min = minYear;
+yearEndInput.max = maxYear;
+yearEndInput.value = maxYear;
+
+function updateYearLabels() {
+  yearStartLabel.textContent = yearStartInput.value;
+  yearEndLabel.textContent = yearEndInput.value;
 }
 
-// Populate year filter
-const yearSelect = document.getElementById('year');
-data.years.forEach((y) => {
-  const opt = document.createElement('option');
-  opt.value = String(y);
-  opt.textContent = String(y);
-  yearSelect.appendChild(opt);
-});
+function enforceYearOrder() {
+  const start = Number(yearStartInput.value);
+  const end = Number(yearEndInput.value);
+  if (start > end) {
+    yearEndInput.value = start;
+  }
+  if (end < start) {
+    yearStartInput.value = end;
+  }
+  updateYearLabels();
+}
+
+updateYearLabels();
 
 function getFilteredData() {
-  const yearVal = yearSelect.value;
-  const filter = (rows) =>
-    yearVal === 'all' ? rows : rows.filter((r) => r.year === Number(yearVal));
+  const start = Number(yearStartInput.value);
+  const end = Number(yearEndInput.value);
+  const filter = (rows) => (rows ?? []).filter((r) => r.year >= start && r.year <= end);
   return {
     expenses: filter(data.expenses),
     income: filter(data.income),
@@ -33,16 +52,10 @@ function getFilteredData() {
 }
 
 let charts = {};
-function destroyChart(id) {
-  if (charts[id]) {
-    charts[id].destroy();
-    charts[id] = null;
-  }
-}
 
 function renderMetrics(filtered) {
-  const totalIncome = filtered.income.reduce((s, r) => s + r.amount, 0);
-  const totalExpense = filtered.expenses.reduce((s, r) => s + r.amount, 0);
+  const totalIncome = (filtered.income ?? []).reduce((s, r) => s + (Number(r.amount) || 0), 0);
+  const totalExpense = (filtered.expenses ?? []).reduce((s, r) => s + (Number(r.amount) || 0), 0);
   const net = totalIncome - totalExpense;
   document.getElementById('metrics').innerHTML = `
     <div class="metric">
@@ -66,13 +79,13 @@ function renderCharts() {
 
   // Aggregate by year
   const byYear = {};
-  filtered.income.forEach((r) => {
+  (filtered.income ?? []).forEach((r) => {
     byYear[r.year] = byYear[r.year] || { income: 0, expense: 0 };
-    byYear[r.year].income += r.amount;
+    byYear[r.year].income += Number(r.amount) || 0;
   });
-  filtered.expenses.forEach((r) => {
+  (filtered.expenses ?? []).forEach((r) => {
     byYear[r.year] = byYear[r.year] || { income: 0, expense: 0 };
-    byYear[r.year].expense += r.amount;
+    byYear[r.year].expense += Number(r.amount) || 0;
   });
   const years = Object.keys(byYear).sort((a, b) => a - b);
 
@@ -81,7 +94,7 @@ function renderCharts() {
   const expenseData = years.map((y) => byYear[y].expense);
   const netData = years.map((y) => byYear[y].income - byYear[y].expense);
 
-  destroyChart('overview');
+  destroyChart(charts, 'overview');
   charts.overview = new Chart(document.getElementById('chart-overview').getContext('2d'), {
     type: 'line',
     data: {
@@ -148,11 +161,12 @@ function renderCharts() {
 
   // Income by category
   const incByCat = {};
-  filtered.income.forEach((r) => {
-    incByCat[r.category] = (incByCat[r.category] || 0) + r.amount;
+  (filtered.income ?? []).forEach((r) => {
+    const amt = Number(r.amount) || 0;
+    incByCat[r.category] = (incByCat[r.category] || 0) + amt;
   });
   const incCatEntries = Object.entries(incByCat).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
-  destroyChart('income-category');
+  destroyChart(charts, 'income-category');
   charts['income-category'] = new Chart(document.getElementById('chart-income-category').getContext('2d'), {
     type: 'doughnut',
     data: {
@@ -167,11 +181,12 @@ function renderCharts() {
 
   // Expenses by category
   const expByCat = {};
-  filtered.expenses.forEach((r) => {
-    expByCat[r.category] = (expByCat[r.category] || 0) + r.amount;
+  (filtered.expenses ?? []).forEach((r) => {
+    const amt = Number(r.amount) || 0;
+    expByCat[r.category] = (expByCat[r.category] || 0) + amt;
   });
   const expCatEntries = Object.entries(expByCat).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
-  destroyChart('expense-category');
+  destroyChart(charts, 'expense-category');
   charts['expense-category'] = new Chart(document.getElementById('chart-expense-category').getContext('2d'), {
     type: 'doughnut',
     data: {
@@ -187,11 +202,12 @@ function renderCharts() {
 
   // Top income sources
   const incBySource = {};
-  filtered.income.forEach((r) => {
-    if (r.amount > 0) incBySource[r.source] = (incBySource[r.source] || 0) + r.amount;
+  (filtered.income ?? []).forEach((r) => {
+    const amt = Number(r.amount) || 0;
+    if (amt > 0) incBySource[r.source] = (incBySource[r.source] || 0) + amt;
   });
   const topIncome = Object.entries(incBySource).sort((a, b) => b[1] - a[1]).slice(0, 12);
-  destroyChart('income-sources');
+  destroyChart(charts, 'income-sources');
   charts['income-sources'] = new Chart(document.getElementById('chart-income-sources').getContext('2d'), {
     type: 'bar',
     data: {
@@ -207,11 +223,12 @@ function renderCharts() {
 
   // Top expense sources
   const expBySource = {};
-  filtered.expenses.forEach((r) => {
-    if (r.amount > 0) expBySource[r.source] = (expBySource[r.source] || 0) + r.amount;
+  (filtered.expenses ?? []).forEach((r) => {
+    const amt = Number(r.amount) || 0;
+    if (amt > 0) expBySource[r.source] = (expBySource[r.source] || 0) + amt;
   });
   const topExpense = Object.entries(expBySource).sort((a, b) => b[1] - a[1]).slice(0, 12);
-  destroyChart('expense-sources');
+  destroyChart(charts, 'expense-sources');
   charts['expense-sources'] = new Chart(document.getElementById('chart-expense-sources').getContext('2d'), {
     type: 'bar',
     data: {
@@ -227,13 +244,14 @@ function renderCharts() {
 
   // Income composition over time (stacked area)
   const incByYearCat = {};
-  filtered.income.forEach((r) => {
+  (filtered.income ?? []).forEach((r) => {
     if (!incByYearCat[r.year]) incByYearCat[r.year] = {};
-    incByYearCat[r.year][r.category] = (incByYearCat[r.year][r.category] || 0) + r.amount;
+    const amt = Number(r.amount) || 0;
+    incByYearCat[r.year][r.category] = (incByYearCat[r.year][r.category] || 0) + amt;
   });
-  const incCategories = [...new Set(filtered.income.map((r) => r.category))].filter(Boolean);
+  const incCategories = [...new Set((filtered.income ?? []).map((r) => r.category))].filter(Boolean);
   const incCompColors = ['#059669', '#0891b2', '#2563eb', '#7c3aed'];
-  destroyChart('income-composition');
+  destroyChart(charts, 'income-composition');
   charts['income-composition'] = new Chart(document.getElementById('chart-income-composition').getContext('2d'), {
     type: 'line',
     data: {
@@ -255,13 +273,14 @@ function renderCharts() {
 
   // Expense composition over time (stacked area)
   const expByYearCat = {};
-  filtered.expenses.forEach((r) => {
+  (filtered.expenses ?? []).forEach((r) => {
     if (!expByYearCat[r.year]) expByYearCat[r.year] = {};
-    expByYearCat[r.year][r.category] = (expByYearCat[r.year][r.category] || 0) + r.amount;
+    const amt = Number(r.amount) || 0;
+    expByYearCat[r.year][r.category] = (expByYearCat[r.year][r.category] || 0) + amt;
   });
-  const expCategories = [...new Set(filtered.expenses.map((r) => r.category))].filter(Boolean);
+  const expCategories = [...new Set((filtered.expenses ?? []).map((r) => r.category))].filter(Boolean);
   const expCompColors = ['#cc5c5c', '#b94a9e', '#9b5cc5', '#8554c4'];
-  destroyChart('expense-composition');
+  destroyChart(charts, 'expense-composition');
   charts['expense-composition'] = new Chart(document.getElementById('chart-expense-composition').getContext('2d'), {
     type: 'line',
     data: {
@@ -289,12 +308,13 @@ function renderCharts() {
   // Top income sources over time (line chart)
   const top5IncSources = topIncome.slice(0, 5).map(([k]) => k);
   const incByYearSource = {};
-  filtered.income.forEach((r) => {
+  (filtered.income ?? []).forEach((r) => {
     if (!incByYearSource[r.year]) incByYearSource[r.year] = {};
-    incByYearSource[r.year][r.source] = (incByYearSource[r.year][r.source] || 0) + r.amount;
+    const amt = Number(r.amount) || 0;
+    incByYearSource[r.year][r.source] = (incByYearSource[r.year][r.source] || 0) + amt;
   });
   const trendIncColors = ['#059669', '#047857', '#065f46', '#134e4a', '#042f2e'];
-  destroyChart('income-sources-trend');
+  destroyChart(charts, 'income-sources-trend');
   charts['income-sources-trend'] = new Chart(document.getElementById('chart-income-sources-trend').getContext('2d'), {
     type: 'line',
     data: {
@@ -316,12 +336,13 @@ function renderCharts() {
   // Top expense sources over time (line chart)
   const top5ExpSources = topExpense.slice(0, 5).map(([k]) => k);
   const expByYearSource = {};
-  filtered.expenses.forEach((r) => {
+  (filtered.expenses ?? []).forEach((r) => {
     if (!expByYearSource[r.year]) expByYearSource[r.year] = {};
-    expByYearSource[r.year][r.source] = (expByYearSource[r.year][r.source] || 0) + r.amount;
+    const amt = Number(r.amount) || 0;
+    expByYearSource[r.year][r.source] = (expByYearSource[r.year][r.source] || 0) + amt;
   });
   const trendExpColors = ['#cc5c5c', '#b94a9e', '#9b5cc5', '#8554c4', '#6d4ab3'];
-  destroyChart('expense-sources-trend');
+  destroyChart(charts, 'expense-sources-trend');
   charts['expense-sources-trend'] = new Chart(document.getElementById('chart-expense-sources-trend').getContext('2d'), {
     type: 'line',
     data: {
@@ -349,7 +370,7 @@ function renderCharts() {
     const net = inc - exp;
     return inc > 0 ? Math.round((net / inc) * 100) : 0;
   });
-  destroyChart('net-margin');
+  destroyChart(charts, 'net-margin');
   charts['net-margin'] = new Chart(document.getElementById('chart-net-margin').getContext('2d'), {
     type: 'bar',
     data: {
@@ -387,7 +408,7 @@ function renderCharts() {
     yoyIncome.push(prevInc > 0 ? Math.round(((inc - prevInc) / prevInc) * 100) : 0);
     yoyExpense.push(prevExp > 0 ? Math.round(((exp - prevExp) / prevExp) * 100) : 0);
   }
-  destroyChart('yoy');
+  destroyChart(charts, 'yoy');
   charts.yoy = new Chart(document.getElementById('chart-yoy').getContext('2d'), {
     type: 'bar',
     data: {
@@ -407,7 +428,36 @@ function renderCharts() {
       },
     },
   });
+
+  // Summary table
+  const tbody = document.querySelector('#data-table tbody');
+  if (tbody) {
+    tbody.innerHTML = years
+      .map((y) => {
+        const inc = byYear[y].income;
+        const exp = byYear[y].expense;
+        const net = inc - exp;
+        const margin = inc > 0 ? Math.round((net / inc) * 100) : 0;
+        return `
+      <tr>
+        <td>${y}</td>
+        <td>${formatCurrency(inc)}</td>
+        <td>${formatCurrency(exp)}</td>
+        <td>${formatCurrency(net)}</td>
+        <td>${margin}%</td>
+      </tr>
+    `;
+      })
+      .join('');
+  }
 }
 
-yearSelect.addEventListener('change', renderCharts);
+yearStartInput.addEventListener('input', () => {
+  enforceYearOrder();
+  renderCharts();
+});
+yearEndInput.addEventListener('input', () => {
+  enforceYearOrder();
+  renderCharts();
+});
 renderCharts();

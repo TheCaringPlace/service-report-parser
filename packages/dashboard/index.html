@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="./favicon.ico" type="image/x-icon" />
     <title>The Caring Place | Dashboard</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -15,14 +16,20 @@
   <body>
     <div class="app">
       <header>
-        <h1>The Caring Place</h1>
-        <p class="subtitle">Overview</p>
+        <a href="https://thecaringplace.info/" target="_blank" rel="noopener" class="logo-link">
+          <img src="./logo.webp" alt="The Caring Place" class="logo" />
+        </a>
+        <div class="header-text">
+          <h1>The Caring Place</h1>
+          <p class="subtitle">Overview</p>
+        </div>
       </header>
 
       <nav>
         <a href="index.html" class="active">Home</a>
         <a href="service-report.html">Service Report</a>
         <a href="financials.html">Financial Report</a>
+        <a href="service-expenses.html">Expense per Household & Individual</a>
       </nav>
 
       <div class="grid">
@@ -35,6 +42,12 @@
           <h2>Financial summary</h2>
           <div class="metrics" id="metrics-financial"></div>
           <a href="financials.html" class="report-link">View Financial Report →</a>
+        </div>
+        <div class="card full-width">
+          <h2>Expense per Household & Individual</h2>
+          <p class="chart-desc">Combined expenses divided by households and individuals served. Only years with 12 months of service data.</p>
+          <div class="metrics" id="metrics-expense-per-household"></div>
+          <a href="service-expenses.html" class="report-link">View Expense per Household & Individual →</a>
         </div>
       </div>
     </div>

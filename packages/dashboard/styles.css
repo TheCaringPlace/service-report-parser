@@ -60,22 +60,49 @@ nav a.active {
 }
 
 header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
   margin-bottom: 2.5rem;
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 1.5rem;
+  padding: 1.25rem 1.5rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
 }
 
-h1 {
+.logo-link {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.logo-link:hover {
+  opacity: 0.9;
+}
+
+.logo {
+  height: 48px;
+  width: auto;
+  display: block;
+}
+
+header h1 {
   margin: 0;
   font-size: 1.75rem;
   font-weight: 700;
   color: var(--text);
 }
 
-.subtitle {
+header .subtitle {
   margin: 0.25rem 0 0;
   color: var(--text-muted);
   font-size: 0.9375rem;
+}
+
+header .header-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .filters {
@@ -88,14 +115,84 @@ h1 {
 
 .filter-group {
   display: flex;
-  align-items: center;
   gap: 0.5rem;
+  flex-direction: column;
+  align-items: stretch;
 }
 
 .filter-group label {
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--text-muted);
+}
+
+.filter-group.year-range {
+  flex-direction: column;
+  align-items: stretch;
+  min-width: 200px;
+}
+
+.year-sliders {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-end;
+}
+
+.year-sliders .slider-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  flex: 1;
+  min-width: 80px;
+}
+
+.year-sliders .year-value {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.year-sliders input[type='range'] {
+  flex: 1;
+  height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--border);
+  border-radius: 3px;
+}
+
+.year-sliders input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: 2px solid var(--card-bg);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.year-sliders input[type='range']::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: 2px solid var(--card-bg);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.year-sliders input[type='range']:focus {
+  outline: none;
+}
+
+.year-sliders input[type='range']:focus::-webkit-slider-thumb {
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.year-sliders input[type='range']:focus::-moz-range-thumb {
+  box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
 select {
@@ -248,4 +345,35 @@ select:focus {
 
 .report-link:hover {
   text-decoration: underline;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.data-table th,
+.data-table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.data-table th {
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--bg);
+}
+
+.data-table tbody tr:hover {
+  background: var(--accent-soft);
+}
+
+.data-table td {
+  color: var(--text);
 }

@@ -1,27 +1,25 @@
 import { Chart, registerables } from 'chart.js';
 import data from '../data/service-report.json';
+import { formatPeriod, parseDatePart } from './lib/utils.js';
+import { chartDefaults } from './lib/charts.js';
 
 Chart.register(...registerables);
 
-const chartDefaults = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: { legend: { position: 'bottom' } },
-};
-
-// Parse dates and sort
-const sortedData = [...data].map((row) => ({
-  ...row,
-  date: new Date(row.daterange.from),
-  year: new Date(row.daterange.from).getFullYear(),
-  month: new Date(row.daterange.from).getMonth() + 1, // 1-12
-  label: formatPeriod(row.daterange),
-})).sort((a, b) => a.date - b.date);
-
-function formatPeriod({ from }) {
-  const d = new Date(from);
-  return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-}
+// Parse dates and sort – use parseDatePart for consistent M/D/YYYY parsing
+const sortedData = [...(data ?? [])]
+  .filter((row) => row.daterange?.from)
+  .map((row) => {
+    const parsed = parseDatePart(row.daterange.from);
+    const date = parsed ? new Date(parsed.year, parsed.month - 1, 1) : new Date(0);
+    return {
+      ...row,
+      date,
+      year: parsed?.year ?? date.getFullYear(),
+      month: parsed?.month ?? date.getMonth() + 1,
+      label: formatPeriod(row.daterange),
+    };
+  })
+  .sort((a, b) => a.date - b.date);
 
 // Populate year filter with unique years from data
 const yearSelect = document.getElementById('year');
@@ -414,6 +412,28 @@ function renderCharts() {
     },
     options: chartDefaults,
   });
+
+  // Summary table
+  const tbody = document.querySelector('#data-table tbody');
+  if (tbody) {
+    tbody.innerHTML = filtered
+      .map((r) => {
+        const h = r.client_types?.households ?? 0;
+        const p = r.client_types?.total ?? 0;
+        const ppH = h > 0 ? (p / h).toFixed(1) : '—';
+        return `
+      <tr>
+        <td>${r.label}</td>
+        <td>${h.toLocaleString()}</td>
+        <td>${p.toLocaleString()}</td>
+        <td>${(r.volunteerhours ?? 0).toLocaleString()}</td>
+        <td>${r.operatingdays ?? 0}</td>
+        <td>${ppH}</td>
+      </tr>
+    `;
+      })
+      .join('');
+  }
 }
 
 yearSelect.addEventListener('change', renderCharts);

@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="./favicon.ico" type="image/x-icon" />
     <title>Service Report | The Caring Place</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -15,14 +16,20 @@
   <body>
     <div class="app">
       <header>
-        <h1>The Caring Place</h1>
-        <p class="subtitle">Service Report</p>
+        <a href="https://thecaringplace.info/" target="_blank" rel="noopener" class="logo-link">
+          <img src="./logo.webp" alt="The Caring Place" class="logo" />
+        </a>
+        <div class="header-text">
+          <h1>The Caring Place</h1>
+          <p class="subtitle">Service Report</p>
+        </div>
       </header>
 
       <nav>
         <a href="index.html">Home</a>
         <a href="service-report.html" class="active">Service Report</a>
         <a href="financials.html">Financial Report</a>
+        <a href="service-expenses.html">Expense per Household & Individual</a>
       </nav>
 
       <div class="filters">
@@ -160,6 +167,26 @@
             <div class="chart-container">
               <canvas id="chart-income"></canvas>
             </div>
+          </div>
+        </div>
+
+        <h3 class="section-heading">Summary</h3>
+        <div class="card full-width">
+          <h2>By period</h2>
+          <div class="table-wrapper">
+            <table class="data-table" id="data-table">
+              <thead>
+                <tr>
+                  <th>Period</th>
+                  <th>Households</th>
+                  <th>People served</th>
+                  <th>Volunteer hours</th>
+                  <th>Operating days</th>
+                  <th>People per household</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
           </div>
         </div>
       </div>
