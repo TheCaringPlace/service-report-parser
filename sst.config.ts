@@ -21,6 +21,7 @@ export default $config({
         command: "npm run build",
         output: "dist",
       },
+      errorPage: "404.html",
       domain:
         $app.stage === "production"
           ? {
@@ -36,7 +37,7 @@ export default $config({
               return {
                 statusCode: 401,
                 statusDescription: "Unauthorized",
-                headers: { "www-authenticate": { value: "Basic realm=\"Dashboard\"" } },
+                headers: { "www-authenticate": { value: "Basic realm=\\"Dashboard\\"" } },
               };
             }`,
         },
